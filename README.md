@@ -32,7 +32,7 @@ APP_PORT=3000
 # database
 DB_HOST=127.0.0.1
 DB_DRIVER=mysql
-DB_NAME=laundry_db
+DB_NAME=capstone_project_db
 DB_USER=root
 DB_PASS=root
 DB_PORT=3306
