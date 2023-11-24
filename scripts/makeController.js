@@ -24,7 +24,7 @@ const generatedLoc = `${__dirname + `/../controllers/${fileName}.js`}`;
 try {
     fs.writeFileSync(generatedLoc, content);
 
-    console.log('New Controller generated');
+    console.log('Controller generated successfully');
     console.log('generated in :', generatedLoc);
 } catch (error) {
     console.log(error);
