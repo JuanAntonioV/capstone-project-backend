@@ -39,7 +39,13 @@ DB_PORT=3306
 
 ```
 
-5. Run the app
+5. Run this command to run migration and seeders
+
+```bash
+npm run db:migrate
+```
+
+6. Run the app
 
 ```bash
 npm run dev
