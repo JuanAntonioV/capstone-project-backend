@@ -7,21 +7,26 @@ module.exports = {
         allowNull: false,
         autoIncrement: true,
         primaryKey: true,
-        type: Sequelize.INTEGER
+        type: Sequelize.BIGINT
       },
       sales_id: {
-        type: Sequelize.BIGINT
+        type: Sequelize.BIGINT,
+        references:{
+          model:'Sales',
+          key:'id'
+        }
       },
       product_id: {
-        type: Sequelize.BIGINT
+        type: Sequelize.BIGINT,
+        references:{
+          model:'Products',
+          key:'id'
+        }
       },
       quantity: {
         type: Sequelize.INTEGER
       },
       amount: {
-        type: Sequelize.BIGINT
-      },
-      id: {
         type: Sequelize.BIGINT
       },
       createdAt: {

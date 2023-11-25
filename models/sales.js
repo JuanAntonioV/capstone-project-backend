@@ -11,13 +11,10 @@ module.exports = (sequelize, DataTypes) => {
      */
     static associate(models) {
       // define association here
-      Sales.belongsTo(User, { foreignKey: 'id_User' });
-      Sales.belongsTo(Category, { foreignKey: 'id_Category' });
+      Sales.belongsTo(models.User, { foreignKey: 'id_User' });
+      Sales.belongsTo(models.Category, { foreignKey: 'id_Category' });
 
-      Sales.hasMany(models.SalesDetail, { foreignKey: 'id_Sales' });
-      
-
-
+      Sales.hasMany(models.Sales_Detail, { foreignKey: 'id_Sales' });
     }
   }
   Sales.init({
@@ -29,6 +26,5 @@ module.exports = (sequelize, DataTypes) => {
     sequelize,
     modelName: 'Sales',
   });
-
   return Sales;
 };
