@@ -116,7 +116,7 @@ productController.getById = async (req, res) => {
   
       });
       if (!product) {
-        notFoundResponse(res)
+        notFoundResponse(res, errorMessage.ERROR_NOT_FOUND)
         return
       }
       await product.destroy();
