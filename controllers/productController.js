@@ -1,8 +1,6 @@
-const { okResponse } = require('../utils/response');
-const { notFoundResponse } = require('../utils/response');
-const { serverErrorResponse } = require('../utils/response');
-const { errorResponse } = require('../utils/response');
-const { errorMessage } = require('../utils/response');
+const { okResponse} = require('../utils/response');
+const { notFoundResponse} = require('../utils/response');
+const { serverErrorResponse} = require('../utils/response');
 
 const {Product} = require("../models")
 const productController = {}
@@ -17,32 +15,22 @@ productController.index = async (req, res) => {
     });
 };
 
-
-  productController.create = async (req, res) => {
-    const { name, price } = req.body;
-
-    if (!name || typeof name !== 'string') {
-      return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION)
-    }else if( name.trim() === ''){
-      return errorResponse(res,errorMessage.ERROR_INPUT_VALIDATION)
-    }
-
-    if (!price || typeof price !== 'number' || price <= 0) {
-      return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    }
-
+productController.create = async (req, res) => {
+    const { name, status, price } = req.body;
     try {
-        const newProduct = await Product.create({
-            name,
-            price,
-        });
+      const newProduct = await Product.create({
+        name,
+        status,
+        price,
+        
+      });
 
-        okResponse(res, newProduct);
+      okResponse(res,newProduct);
     } catch (error) {
-        console.error(error);
-        serverErrorResponse(res);
+      console.error(error);
+      serverErrorResponse(res)
     }
-}
+  }
 
   productController.getAll = async (req, res, next) => {
     try {
@@ -63,49 +51,39 @@ productController.getById = async (req, res) => {
      
       });
       if (!product) {
-        notFoundResponse(res, errorMessage.ERROR_NOT_FOUND)
+        notFoundResponse(res)
         return
       }
 
       okResponse(res, product);
     } catch (error) {
       console.error(error);
-      serverErrorResponse(res,errorMessage.ERROR_SERVER)
+      serverErrorResponse(res)
     }
   };
   
  productController.update = async (req, res) => {
     const productId = req.params.id;
-    const { name, price } = req.body;
-
-    if (!name || typeof name !== 'string') {
-      return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION)
-    }else if(name.trim() === ''){
-      return errorResponse(res,errorMessage.ERROR_INPUT_VALIDATION)
-    }
-
-    if (!price || typeof price !== 'number' || price <= 0) {
-      return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    }
-
+    const { name, status, price } = req.body;
     try {
       let product = await Product.findByPk(productId,{
   
       });
   
       if (!product) {
-        notFoundResponse(res,errorMessage.ERROR_NOT_FOUND)
+        notFoundResponse(res)
         return
       }
       product = await product.update({
         name,
+        status,
         price,
       });
       
       okResponse(res,product);
     } catch (error) {
       console.error(error);
-      serverErrorResponse(res,errorMessage.ERROR_SERVER)
+      serverErrorResponse(res)
     }
   };
   
