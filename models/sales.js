@@ -9,10 +9,16 @@ module.exports = (sequelize, DataTypes) => {
          */
         static associate(models) {
             // define association here
-            Sales.belongsTo(models.User, { foreignKey: 'id_User' });
-            Sales.belongsTo(models.Category, { foreignKey: 'id_Category' });
+            Sales.belongsTo(models.User, { foreignKey: 'user_id', as: 'user' });
+            Sales.belongsTo(models.Category, {
+                foreignKey: 'category_id',
+                as: 'category',
+            });
 
-            Sales.hasMany(models.Sales_Detail, { foreignKey: 'id_Sales' });
+            Sales.hasMany(models.Sales_Detail, {
+                foreignKey: 'sales_id',
+                as: 'sales_detail',
+            });
         }
     }
     Sales.init(
