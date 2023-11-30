@@ -19,7 +19,8 @@ module.exports = {
         type: Sequelize.STRING
       },
       status: {
-        type: Sequelize.BOOLEAN
+        type: Sequelize.BOOLEAN,
+        defaultValue :true,
       },
       is_admin: {
         type: Sequelize.BOOLEAN
