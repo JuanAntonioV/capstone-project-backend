@@ -1,12 +1,32 @@
 const { User, sequelize } = require('../models');
-const { okResponse, errorResponse, notFoundResponse, errorMessage, serverErrorResponse } = require('../utils/response');
+const {
+    okResponse,
+    errorResponse,
+    notFoundResponse,
+    errorMessage,
+    serverErrorResponse,
+} = require('../utils/response');
 
 // Create a new User
 const createUser = async (req, res, next) => {
     const { name, email, password, is_admin } = req.body;
-    if (!name || typeof name !== 'string' || !email || typeof email !== 'string' || !password || typeof password !== 'string' || is_admin === null || typeof is_admin !== 'boolean') {
+    if (
+        !name ||
+        typeof name !== 'string' ||
+        !email ||
+        typeof email !== 'string' ||
+        !password ||
+        typeof password !== 'string' ||
+        is_admin === null ||
+        typeof is_admin !== 'boolean'
+    ) {
         return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    } else if (name.trim() === '' || email.trim() === '' || password.trim() === '' || is_admin === null) {
+    } else if (
+        name.trim() === '' ||
+        email.trim() === '' ||
+        password.trim() === '' ||
+        is_admin === null
+    ) {
         return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
     }
 
@@ -27,20 +47,38 @@ const getAllUsers = async (req, res, next) => {
                 'name',
                 'email',
                 'password',
-                'is_admin',
                 'status',
                 [
                     sequelize.fn(
                         'DATE_FORMAT',
-                        sequelize.col('createdAt'),
+                        sequelize.col('user.createdAt'),
                         '%d %M %Y'
                     ),
                     'registered_at',
                 ],
             ],
+            include: [
+                {
+                    association: 'roles',
+                    attributes: ['id', 'name'],
+                    through: {
+                        attributes: [],
+                    },
+                },
+            ],
         });
 
-        okResponse(res, allUsers);
+        // make user.roles only return the role id
+        const allUsersRoles = allUsers.map((user) => {
+            const plainUser = user.get({ plain: true });
+            const roles = plainUser.roles.map((role) => role.id);
+            return {
+                ...plainUser,
+                roles,
+            };
+        });
+
+        okResponse(res, allUsersRoles);
     } catch (err) {
         next(err);
     }
@@ -56,16 +94,24 @@ const getUserById = async (req, res, next) => {
                 'name',
                 'email',
                 'password',
-                'is_admin',
                 'status',
                 [
                     sequelize.fn(
                         'DATE_FORMAT',
-                        sequelize.col('createdAt'),
+                        sequelize.col('user.createdAt'),
                         '%d %M %Y'
                     ),
                     'registered_at',
                 ],
+            ],
+            include: [
+                {
+                    association: 'roles',
+                    attributes: ['id', 'name'],
+                    through: {
+                        attributes: [],
+                    },
+                },
             ],
         });
 
@@ -73,7 +119,16 @@ const getUserById = async (req, res, next) => {
             return notFoundResponse(res, errorMessage.ERROR_NOT_FOUND);
         }
 
-        okResponse(res, user);
+        // make user.roles only return the role id
+        const plainUser = user.get({ plain: true });
+        const roles = plainUser.roles.map((role) => role.id);
+
+        const userWithRoles = {
+            ...plainUser,
+            roles,
+        };
+
+        okResponse(res, userWithRoles);
     } catch (err) {
         next(err);
     }
@@ -83,9 +138,23 @@ const getUserById = async (req, res, next) => {
 const updateUserById = async (req, res, next) => {
     const userId = req.params.id;
     const { name, email, password, is_admin } = req.body;
-    if (!name || typeof name !== 'string' || !email || typeof email !== 'string' || !password || typeof password !== 'string' || is_admin === null || typeof is_admin !== 'boolean') {
+    if (
+        !name ||
+        typeof name !== 'string' ||
+        !email ||
+        typeof email !== 'string' ||
+        !password ||
+        typeof password !== 'string' ||
+        is_admin === null ||
+        typeof is_admin !== 'boolean'
+    ) {
         return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    } else if (name.trim() === '' || email.trim() === '' || password.trim() === '' || is_admin === null) {
+    } else if (
+        name.trim() === '' ||
+        email.trim() === '' ||
+        password.trim() === '' ||
+        is_admin === null
+    ) {
         return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
     }
 
@@ -95,11 +164,17 @@ const updateUserById = async (req, res, next) => {
             return notFoundResponse(res, errorMessage.ERROR_NOT_FOUND);
         }
 
-        user = await user.update({
-            name, email, password, is_admin
-        }, {
-            returning: true
-        });
+        user = await user.update(
+            {
+                name,
+                email,
+                password,
+                is_admin,
+            },
+            {
+                returning: true,
+            }
+        );
 
         const [updatedUser] = user;
 
