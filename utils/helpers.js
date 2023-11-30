@@ -1,3 +1,5 @@
+const bcrypt = require('bcrypt');
+
 const getAppUrl = () => {
     const port = process.env.PORT || 3000;
     const envAppUrl = process.env.APP_URL;
@@ -47,7 +49,15 @@ const generateRandomChars = (length) => {
 // const salesId = generateSalesId();
 // console.log(salesId);
 
+// Hashing password
+const hashPassword = async (password) => {
+    const passwordSalt = process.env.PASSWORD_SALT || 10;
+    const hashedPassword = await bcrypt.hash(password, Number(passwordSalt));
+    return hashedPassword;
+};
+
 module.exports = {
     getAppUrl,
     generateSalesId,
+    hashPassword,
 };
