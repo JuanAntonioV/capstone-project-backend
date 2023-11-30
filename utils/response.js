@@ -1,8 +1,11 @@
-const okResponse = (res, data, code = 200, status = true) => {
+const okResponse = (res, data, message, code = 200, status = true) => {
     const format = {
         status,
-        data,
     };
+
+    if (message) format.message = message;
+
+    if (data) format.data = data;
 
     return res.status(code).json(format);
 };
