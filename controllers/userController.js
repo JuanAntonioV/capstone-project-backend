@@ -30,17 +30,21 @@ const createUser = async (req, res, next) => {
   }
 
   try {
+    // Create a new user
     const newUser = await User.create({
       name,
       email,
       password: encryptWithAES(password),
     });
+
+    // Add the user ID and role ID to the user_roles table
+    await newUser.addRoles([2]); // Assuming the role ID is 2
+
     okResponse(res, newUser);
   } catch (err) {
     next(err);
   }
 };
-
 // Read all Users
 const getAllUsers = async (req, res, next) => {
   try {
