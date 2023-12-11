@@ -1,9 +1,17 @@
 const { okResponse, errorResponse } = require('../utils/response');
-const { Sales, sequelize, Category, Product, User } = require('../models');
+const {
+    Sales,
+    sequelize,
+    Category,
+    Product,
+    User,
+    SalesDetail,
+} = require('../models');
 const { generateSalesId } = require('../utils/helpers');
 const {
     createTransactionSchema,
 } = require('../validators/transactionValidator');
+const { salesStatus } = require('../Entities/salesEntities');
 
 /*
     This is a sample controller, you can continue to build your own controller
@@ -145,6 +153,7 @@ const createTransaction = async (req, res, next) => {
                 product_id: product.id,
                 qty: productData.qty,
                 price: product.price,
+                amount: product.price * productData.qty,
             };
         });
 
@@ -173,10 +182,11 @@ const createTransaction = async (req, res, next) => {
         );
 
         // create transaction
-        const sales = await Sales.create({
+        await Sales.create({
             id: salesId,
             user_id: userId,
             category_id,
+            status: salesStatus.MENUNGGU_PEMBAYARAN,
             total_payment: totalAmount,
             pickup_date,
             delivery_date,
@@ -185,15 +195,18 @@ const createTransaction = async (req, res, next) => {
         // create sales detail
         const salesDetail = validProducts.map((product) => ({
             sales_id: salesId,
-            ...product,
+            product_id: product.product_id,
+            quantity: product.qty,
+            amount: product.amount,
         }));
 
-        await sales.createSalesDetail(salesDetail);
+        await SalesDetail.bulkCreate(salesDetail);
 
         okResponse(res, {
             sales_id: salesId,
         });
     } catch (err) {
+        console.log('error', err);
         next(err);
     }
 };

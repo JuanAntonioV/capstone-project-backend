@@ -1,4 +1,7 @@
 'use strict';
+
+const { salesStatus } = require('../Entities/salesEntities');
+
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
@@ -36,6 +39,7 @@ module.exports = {
             },
             status: {
                 type: Sequelize.INTEGER,
+                defaultValue: salesStatus.MENUNGGU_PEMBAYARAN,
             },
             createdAt: {
                 allowNull: false,
