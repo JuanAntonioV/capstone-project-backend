@@ -15,7 +15,7 @@ module.exports = (sequelize, DataTypes) => {
                 as: 'category',
             });
 
-            Sales.hasMany(models.Sales_Detail, {
+            Sales.hasMany(models.SalesDetail, {
                 foreignKey: 'sales_id',
                 as: 'sales_detail',
             });
@@ -26,6 +26,8 @@ module.exports = (sequelize, DataTypes) => {
             user_id: DataTypes.BIGINT,
             category_id: DataTypes.BIGINT,
             total_payment: DataTypes.BIGINT,
+            pickup_date: DataTypes.DATE,
+            delivery_date: DataTypes.DATE,
             status: DataTypes.INTEGER,
         },
         {

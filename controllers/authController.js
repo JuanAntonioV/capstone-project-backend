@@ -6,6 +6,7 @@ const {
     errorMessage,
 } = require('../utils/response');
 const jwt = require('jsonwebtoken');
+const { loginSchema } = require('../validators/authValidator');
 
 /*
     This is a sample controller, you can continue to build your own controller
@@ -15,15 +16,10 @@ const jwt = require('jsonwebtoken');
 const login = async (req, res, next) => {
     const { email, password } = req.body;
 
-    if (
-        !email ||
-        typeof email !== 'string' ||
-        !password ||
-        typeof password !== 'string'
-    ) {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    } else if (email.trim() === '' || password.trim() === '') {
-        return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
+    const validate = loginSchema.validate(req.body);
+
+    if (validate.error) {
+        return errorResponse(res, validate.error.message, 400);
     }
 
     try {
@@ -101,7 +97,7 @@ const logout = async (req, res, next) => {
 
         await AccessToken.destroy({
             where: {
-                token,
+                token: token.split(' ')[1],
             },
         });
 

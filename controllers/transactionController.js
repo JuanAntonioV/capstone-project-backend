@@ -1,6 +1,9 @@
-const { okResponse } = require('../utils/response');
-const { Sales, sequelize } = require('../models');
+const { okResponse, errorResponse } = require('../utils/response');
+const { Sales, sequelize, Category, Product, User } = require('../models');
 const { generateSalesId } = require('../utils/helpers');
+const {
+    createTransactionSchema,
+} = require('../validators/transactionValidator');
 
 /*
     This is a sample controller, you can continue to build your own controller
@@ -98,31 +101,105 @@ const getTransactionDetail = async (req, res, next) => {
     }
 };
 
-// const createTransaction = (req, res, next) => {
-//     try {
-//         const userId = req.user.id;
-//         const { products } = req.body;
+const createTransaction = async (req, res, next) => {
+    try {
+        const userId = req.user.id;
+        const { products, category_id, pickup_date, delivery_date, user_id } =
+            req.body;
 
-//         const salesId = generateSalesId();
+        // validate
+        const validate = createTransactionSchema.validate(req.body);
 
-//         sales_detail.forEach((item) => {
-//             item.sales_id = salesId;
-//         });
+        if (validate.error) {
+            return errorResponse(res, validate.error.message, 400);
+        }
 
-//         const sales = Sales.create({
-//             id: salesId,
-//             user_id: userId,
-//             sales_detail,
-//         });
+        // check category
+        const isCategoryExist = await Category.findOne({
+            where: {
+                id: category_id,
+                status: 1,
+            },
+        });
 
-//         okResponse(res, sales);
-//     } catch (err) {
-//         next(err);
-//     }
-// };
+        if (!isCategoryExist) {
+            return errorResponse(res, 'Category tidak ditemukan', 404);
+        }
+
+        // check product
+        const productsId = products.map((product) => product.product_id);
+
+        const isProductExist = await Product.findAll({
+            where: {
+                id: productsId,
+                status: 1,
+            },
+        });
+
+        const validProducts = isProductExist.map((product) => {
+            const productData = products.find(
+                (item) => item.product_id === product.id
+            );
+
+            return {
+                product_id: product.id,
+                qty: productData.qty,
+                price: product.price,
+            };
+        });
+
+        if (isProductExist.length !== productsId.length) {
+            return errorResponse(res, 'Product tidak ditemukan', 404);
+        }
+
+        // check user
+        const isUserExist = await User.findOne({
+            where: {
+                id: user_id,
+                status: 1,
+            },
+        });
+
+        if (!isUserExist) {
+            return errorResponse(res, 'User tidak ditemukan', 404);
+        }
+
+        // generate sales id
+        const salesId = generateSalesId();
+
+        const totalAmount = validProducts.reduce(
+            (acc, product) => acc + product.qty * product.price,
+            0
+        );
+
+        // create transaction
+        const sales = await Sales.create({
+            id: salesId,
+            user_id: userId,
+            category_id,
+            total_payment: totalAmount,
+            pickup_date,
+            delivery_date,
+        });
+
+        // create sales detail
+        const salesDetail = validProducts.map((product) => ({
+            sales_id: salesId,
+            ...product,
+        }));
+
+        await sales.createSalesDetail(salesDetail);
+
+        okResponse(res, {
+            sales_id: salesId,
+        });
+    } catch (err) {
+        next(err);
+    }
+};
 
 module.exports = {
     getUserTransaction,
     getTransactionDetail,
-    // createTransaction,
+    createTransaction,
 };

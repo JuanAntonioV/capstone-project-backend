@@ -26,6 +26,14 @@ module.exports = {
             total_payment: {
                 type: Sequelize.BIGINT,
             },
+            pickup_date: {
+                type: Sequelize.DATE,
+                allowNull: true,
+            },
+            delivery_date: {
+                type: Sequelize.DATE,
+                allowNull: true,
+            },
             status: {
                 type: Sequelize.INTEGER,
             },
