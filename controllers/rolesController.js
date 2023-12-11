@@ -1,5 +1,6 @@
 const { okResponse, notFoundResponse } = require('../utils/response');
 const { Roles, Sequelize } = require('../models');
+const { getCurrentDate } = require('../utils/helpers');
 
 /*
     This is a sample controller, you can continue to build your own controller
@@ -127,6 +128,7 @@ const updateRoles = async (req, res, next) => {
 
         await role.update({
             name,
+            updatedAt: getCurrentDate(),
         });
 
         okResponse(res, role, 'Role updated');

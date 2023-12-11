@@ -1,18 +1,23 @@
 const { Category, sequelize } = require('../models');
-const { okResponse, errorResponse, notFoundResponse, errorMessage, serverErrorResponse } = require('../utils/response');
-
+const {
+    okResponse,
+    errorResponse,
+    notFoundResponse,
+    errorMessage,
+    serverErrorResponse,
+} = require('../utils/response');
 
 // Create a new Category
 const createCategory = async (req, res, next) => {
-    const {name} = req.body;
+    const { name } = req.body;
     if (!name || typeof name !== 'string') {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION)
-    }else if( name.trim() === ''){
-        return errorResponse(res,errorMessage.ERROR_INPUT_VALIDATION)
+        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
+    } else if (name.trim() === '') {
+        return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
     }
 
     try {
-        const newCategory = await Category.create({name})
+        const newCategory = await Category.create({ name });
         okResponse(res, newCategory);
     } catch (err) {
         next(err);
@@ -76,37 +81,29 @@ const getCategoryById = async (req, res, next) => {
 
 // Update a Category by ID
 const updateCategoryById = async (req, res, next) => {
-
     const categoryId = req.params.id;
-    const {name} = req.body;
+    const { name } = req.body;
     if (!name || typeof name !== 'string') {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION)
-    }else if( name.trim() === ''){
-        return errorResponse(res,errorMessage.ERROR_INPUT_VALIDATION)
+        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
+    } else if (name.trim() === '') {
+        return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
     }
 
-
-
     try {
-
         let category = await Category.findByPk(categoryId);
         if (!category) {
-            notFoundResponse(res,errorMessage.ERROR_NOT_FOUND)
-            return
-          }
-          category = await category.update({
-            name
-          });
-          
-          okResponse(res,category);
-        } catch (error) {
-          console.error(error);
-          serverErrorResponse(res,errorMessage.ERROR_SERVER)
+            notFoundResponse(res, errorMessage.ERROR_NOT_FOUND);
+            return;
         }
-  
-    };
+        category = await category.update({
+            name,
+        });
 
-
+        okResponse(res, category);
+    } catch (error) {
+        next(error);
+    }
+};
 
 // Delete a Category by ID
 const deleteCategoryById = async (req, res, next) => {

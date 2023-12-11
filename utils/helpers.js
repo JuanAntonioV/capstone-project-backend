@@ -1,4 +1,5 @@
 const bcrypt = require('bcrypt');
+const moment = require('moment');
 
 const getAppUrl = () => {
     const port = process.env.PORT || 3000;
@@ -56,8 +57,16 @@ const hashPassword = async (password) => {
     return hashedPassword;
 };
 
+const getCurrentDate = (format, locale) => {
+    const currLocale = locale || 'Asia/Jakarta';
+    const currFormat = format || 'YYYY-MM-DD HH:mm:ss';
+    const currDate = moment().tz(currLocale).format(currFormat);
+    return currDate;
+};
+
 module.exports = {
     getAppUrl,
     generateSalesId,
     hashPassword,
+    getCurrentDate,
 };
