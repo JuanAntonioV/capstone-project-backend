@@ -53,15 +53,17 @@ const generateRandomChars = (length) => {
 // Hashing password
 const hashPassword = async (password) => {
     const passwordSalt = process.env.PASSWORD_SALT || 10;
-    const hashedPassword = await bcrypt.hash(password, Number(passwordSalt));
-    return hashedPassword;
+    return await bcrypt.hash(password, Number(passwordSalt));
+};
+
+const checkPassword = async (password, hashedPassword) => {
+    return await bcrypt.compare(password, hashedPassword);
 };
 
 const getCurrentDate = (format, locale) => {
     const currLocale = locale || 'Asia/Jakarta';
     const currFormat = format || 'YYYY-MM-DD HH:mm:ss';
-    const currDate = moment().tz(currLocale).format(currFormat);
-    return currDate;
+    return moment().tz(currLocale).format(currFormat);
 };
 
 module.exports = {
@@ -69,4 +71,5 @@ module.exports = {
     generateSalesId,
     hashPassword,
     getCurrentDate,
+    checkPassword,
 };

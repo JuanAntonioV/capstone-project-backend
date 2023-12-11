@@ -7,8 +7,7 @@ const {
     serverErrorResponse,
 } = require('../utils/response');
 
-const { encryptWithAES } = require('../utils/crypto');
-const { getCurrentDate } = require('../utils/helpers');
+const { getCurrentDate, hashPassword } = require('../utils/helpers');
 
 // Create a new User
 const createUser = async (req, res, next) => {
@@ -35,7 +34,7 @@ const createUser = async (req, res, next) => {
         const newUser = await User.create({
             name,
             email,
-            password: encryptWithAES(password),
+            password: hashPassword(password),
         });
 
         // Add the user ID and role ID to the user_roles table

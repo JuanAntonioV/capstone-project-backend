@@ -1,5 +1,6 @@
 const { okResponse } = require('../utils/response');
 const { Sales, sequelize } = require('../models');
+const { generateSalesId } = require('../utils/helpers');
 
 /*
     This is a sample controller, you can continue to build your own controller
@@ -97,7 +98,31 @@ const getTransactionDetail = async (req, res, next) => {
     }
 };
 
+// const createTransaction = (req, res, next) => {
+//     try {
+//         const userId = req.user.id;
+//         const { products } = req.body;
+
+//         const salesId = generateSalesId();
+
+//         sales_detail.forEach((item) => {
+//             item.sales_id = salesId;
+//         });
+
+//         const sales = Sales.create({
+//             id: salesId,
+//             user_id: userId,
+//             sales_detail,
+//         });
+
+//         okResponse(res, sales);
+//     } catch (err) {
+//         next(err);
+//     }
+// };
+
 module.exports = {
     getUserTransaction,
     getTransactionDetail,
+    // createTransaction,
 };
