@@ -4,7 +4,6 @@ const {
     errorResponse,
     notFoundResponse,
     errorMessage,
-    serverErrorResponse,
 } = require('../utils/response');
 
 // Create a new Category
