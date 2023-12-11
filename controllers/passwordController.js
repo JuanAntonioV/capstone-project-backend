@@ -6,8 +6,7 @@ const {
     errorMessage,
 } = require('../utils/response');
 
-const { encryptWithAES } = require('../utils/crypto');
-const { getCurrentDate } = require('../utils/helpers');
+const { getCurrentDate, hashPassword } = require('../utils/helpers');
 
 const updateUserPassword = async (req, res, next) => {
     const userId = req.params.id;
@@ -26,7 +25,7 @@ const updateUserPassword = async (req, res, next) => {
 
         user = await user.update(
             {
-                password: encryptWithAES(password),
+                password: hashPassword(password),
                 updatedAt: getCurrentDate(),
             },
             {
