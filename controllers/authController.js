@@ -14,7 +14,7 @@ const { loginSchema } = require('../validators/authValidator');
 */
 
 const login = async (req, res, next) => {
-    const { email, password } = req.body;
+    const { email, password, isRemember } = req.body;
 
     const validate = loginSchema.validate(req.body);
 
@@ -55,8 +55,15 @@ const login = async (req, res, next) => {
             return errorResponse(res, 'Email atau password salah', 401);
         }
 
+        const isPasswordValid = await checkPassword(password, user.password);
+
+        if (!isPasswordValid) {
+            return errorResponse(res, 'Email atau password salah', 401);
+        }
+
         // make user.roles only return the role id
         const plainUser = user.get({ plain: true });
+        delete plainUser.password;
         const roles = plainUser.roles.map((role) => role.id);
 
         const userWithRoles = {
@@ -64,23 +71,25 @@ const login = async (req, res, next) => {
             roles,
         };
 
-        const isPasswordValid = await checkPassword(password, user.password);
-
-        if (!isPasswordValid) {
-            return errorResponse(res, 'Email atau password salah', 401);
-        }
+        const tokenExpireIn = isRemember ? '7d' : '1d';
+        // in minutes
+        const tokenExpireInValue = isRemember ? 7 * 24 * 60 : 24 * 60;
 
         const token = jwt.sign(userWithRoles, process.env.JWT_SECRET, {
-            expiresIn: process.env.JWT_EXPIRES_IN,
+            expiresIn: tokenExpireIn,
         });
 
         await AccessToken.create({
             user_id: user.id,
             token,
-            ipAddress: req.ip?.replace('::ffff:', ''),
+            ipAddress: req.ip,
         });
 
-        okResponse(res, { user: userWithRoles, token });
+        okResponse(res, {
+            user: userWithRoles,
+            token,
+            token_expire_in: tokenExpireInValue,
+        });
     } catch (err) {
         console.log(err);
         next(err);
@@ -97,7 +106,7 @@ const logout = async (req, res, next) => {
 
         await AccessToken.destroy({
             where: {
-                token: token.split(' ')[1],
+                token,
             },
         });
 

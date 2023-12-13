@@ -6,10 +6,5 @@ const {
 
 module.exports = (router) => {
     router.post('/auth/login', login);
-    router.post(
-        '/auth/logout',
-        checkUserToken,
-        checkUserRole(['admin']),
-        logout
-    );
+    router.post('/auth/logout', checkUserToken, logout);
 };

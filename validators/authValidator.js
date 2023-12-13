@@ -11,6 +11,7 @@ const loginSchema = Joi.object({
         'string.empty': 'Password tidak boleh kosong',
         'any.required': 'Password tidak boleh kosong',
     }),
+    isRemember: Joi.boolean(),
 });
 
 const registerSchema = Joi.object({

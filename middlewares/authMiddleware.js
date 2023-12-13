@@ -2,7 +2,7 @@ const { AccessToken, sequelize } = require('../models');
 const { errorResponse } = require('../utils/response');
 
 const checkUserToken = async (req, res, next) => {
-    const token = req.headers.authorization.split(' ')[1];
+    const token = req.headers.authorization;
     if (!token) {
         return errorResponse(res, 'Unauthorized', 401);
     }
