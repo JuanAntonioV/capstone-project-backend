@@ -1,10 +1,8 @@
 const { okResponse } = require('../utils/response');
 const { Sales, Product, User, sequelize } = require('../models');
 const { salesStatus } = require('../Entities/salesEntities');
-const { getCurrentDate } = require('../utils/helpers');
 const { Op } = require('sequelize');
 const moment = require('moment-timezone');
-const { jakartaTimezone } = require('../utils/entities');
 
 /*
     This is a sample controller, you can continue to build your own controller
