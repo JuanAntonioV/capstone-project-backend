@@ -4,10 +4,13 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const appRouter = require('./routers');
+const { jakartaTimezone } = require('./utils/entities');
+const moment = require('moment');
 dotenv.config();
 
 const app = express();
 
+moment.tz.setDefault(jakartaTimezone);
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));

@@ -7,17 +7,19 @@ const productRoute = require('./productRoute');
 const rolesRoute = require('./rolesRoute');
 const passwordRoute = require('./passwordRoute');
 const authRoute = require('./authRoute');
+const analiticsRoute = require('./analyticsRoute');
 
 const router = Router();
 
 module.exports = () => {
     homeRoute(router);
+    authRoute(router);
     userRoute(router);
     categoryRoute(router);
     transactionRoute(router);
     productRoute(router);
     rolesRoute(router);
     passwordRoute(router);
-    authRoute(router);
+    analiticsRoute(router);
     return router;
 };

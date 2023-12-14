@@ -60,10 +60,11 @@ const checkPassword = async (password, hashedPassword) => {
     return await bcrypt.compare(password, hashedPassword);
 };
 
-const getCurrentDate = (format, locale) => {
-    const currLocale = locale || 'Asia/Jakarta';
+const getCurrentDate = (format, add, addUnit) => {
     const currFormat = format || 'YYYY-MM-DD HH:mm:ss';
-    return moment().tz(currLocale).format(currFormat);
+    const currAdd = add || 0;
+    const currAddUnit = addUnit || 'days';
+    return moment().add(currAdd, currAddUnit).format(currFormat);
 };
 
 module.exports = {
