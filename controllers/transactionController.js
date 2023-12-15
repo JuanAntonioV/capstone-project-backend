@@ -11,12 +11,61 @@ const { generateSalesId } = require('../utils/helpers');
 const {
     createTransactionSchema,
 } = require('../validators/transactionValidator');
-const { salesStatus } = require('../Entities/salesEntities');
+const { salesStatus } = require('../entities/salesEntities');
+const { Op } = require('sequelize');
+const moment = require('moment');
+const _ = require('lodash');
 
 /*
     This is a sample controller, you can continue to build your own controller
     by following the sample below.
 */
+
+const getAllTransaction = async (req, res, next) => {
+    try {
+        const fromDate = req.query.from;
+        const toDate = req.query.to;
+        // const page = req.query.page;
+        // const limit = parseInt(req.query.limit) || 10;
+        // const offset = (page - 1) * limit;
+
+        const where = {};
+
+        if (_.isEmpty(fromDate) && _.isEmpty(toDate)) {
+            where.createdAt = {
+                [Op.between]: [
+                    moment(fromDate).endOf('day'),
+                    moment(toDate).endOf('day'),
+                ],
+            };
+        }
+
+        const sales = await Sales.findAll({
+            where: !_.isEmpty(where) ? null : where,
+            attributes: {
+                exclude: ['createdAt', 'updatedAt'],
+            },
+            include: [
+                {
+                    association: 'user',
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'password'],
+                    },
+                },
+                {
+                    association: 'category',
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt'],
+                    },
+                },
+            ],
+        });
+
+        okResponse(res, sales);
+    } catch (err) {
+        next(err);
+    }
+};
 
 const getUserTransaction = async (req, res, next) => {
     try {
@@ -214,5 +263,6 @@ const createTransaction = async (req, res, next) => {
 module.exports = {
     getUserTransaction,
     getTransactionDetail,
+    getAllTransaction,
     createTransaction,
 };

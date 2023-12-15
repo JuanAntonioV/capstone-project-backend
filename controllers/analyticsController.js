@@ -1,6 +1,6 @@
 const { okResponse } = require('../utils/response');
 const { Sales, Product, User, sequelize } = require('../models');
-const { salesStatus } = require('../Entities/salesEntities');
+const { salesStatus } = require('../entities/salesEntities');
 const { Op } = require('sequelize');
 const moment = require('moment-timezone');
 

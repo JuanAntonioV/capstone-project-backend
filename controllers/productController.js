@@ -44,7 +44,9 @@ productController.create = async (req, res, next) => {
 
 productController.getAll = async (req, res, next) => {
     try {
-        const activeProduct = await Product.findAll({});
+        const activeProduct = await Product.findAll({
+            order: [['createdAt', 'DESC']],
+        });
 
         okResponse(res, activeProduct);
     } catch (err) {
@@ -69,7 +71,7 @@ productController.getById = async (req, res, next) => {
 
 productController.update = async (req, res, next) => {
     const productId = req.params.id;
-    const { name, price } = req.body;
+    const { name, price, status } = req.body;
 
     if (!name || typeof name !== 'string') {
         return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
@@ -91,6 +93,7 @@ productController.update = async (req, res, next) => {
         product = await product.update({
             name,
             price,
+            status,
             updatedAt: getCurrentDate(),
         });
 
@@ -105,7 +108,7 @@ productController.delete = async (req, res, next) => {
     try {
         const product = await Product.findByPk(productId, {});
         if (!product) {
-            notFoundResponse(res, errorMessage.ERROR_NOT_FOUND);
+            errorResponse(res, errorMessage.ERROR_NOT_FOUND);
             return;
         }
         await product.destroy();
