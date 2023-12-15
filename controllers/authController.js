@@ -117,7 +117,19 @@ const logout = async (req, res, next) => {
     }
 };
 
+const me = async (req, res, next) => {
+    try {
+        const user = req.user;
+
+        okResponse(res, user);
+    } catch (err) {
+        console.log(err);
+        next(err);
+    }
+};
+
 module.exports = {
     login,
     logout,
+    me,
 };

@@ -1,4 +1,4 @@
-const { login, logout } = require('../controllers/authController');
+const { login, logout, me } = require('../controllers/authController');
 const {
     checkUserToken,
     checkUserRole,
@@ -7,4 +7,5 @@ const {
 module.exports = (router) => {
     router.post('/auth/login', login);
     router.post('/auth/logout', checkUserToken, logout);
+    router.get('/auth/me', checkUserToken, me);
 };
