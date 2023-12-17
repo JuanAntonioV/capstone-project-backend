@@ -1,18 +1,24 @@
 const { Category, sequelize } = require('../models');
+const { getCurrentDate } = require('../utils/helpers');
 const {
     okResponse,
     errorResponse,
     notFoundResponse,
     errorMessage,
 } = require('../utils/response');
+const {
+    createCategorySchema,
+    updateCategorySchema,
+} = require('../validators/categoryValidator');
 
 // Create a new Category
 const createCategory = async (req, res, next) => {
     const { name } = req.body;
-    if (!name || typeof name !== 'string') {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    } else if (name.trim() === '') {
-        return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
+
+    const validate = createCategorySchema.validate({ name });
+
+    if (validate.error) {
+        return errorResponse(res, validate.error.message, 400);
     }
 
     try {
@@ -37,7 +43,7 @@ const getAllCategories = async (req, res, next) => {
                         sequelize.col('createdAt'),
                         '%d %M %Y'
                     ),
-                    'registered_at',
+                    'createdAt',
                 ],
             ],
         });
@@ -81,11 +87,12 @@ const getCategoryById = async (req, res, next) => {
 // Update a Category by ID
 const updateCategoryById = async (req, res, next) => {
     const categoryId = req.params.id;
-    const { name } = req.body;
-    if (!name || typeof name !== 'string') {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    } else if (name.trim() === '') {
-        return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
+    const { name, status } = req.body;
+
+    const validate = updateCategorySchema.validate({ name, status });
+
+    if (validate.error) {
+        return errorResponse(res, validate.error.message, 400);
     }
 
     try {
@@ -96,6 +103,8 @@ const updateCategoryById = async (req, res, next) => {
         }
         category = await category.update({
             name,
+            status,
+            updatedAt: getCurrentDate(),
         });
 
         okResponse(res, category);

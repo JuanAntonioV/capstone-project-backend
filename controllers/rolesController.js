@@ -1,6 +1,15 @@
-const { okResponse, notFoundResponse } = require('../utils/response');
+const {
+    okResponse,
+    notFoundResponse,
+    errorMessage,
+    errorResponse,
+} = require('../utils/response');
 const { Roles, Sequelize } = require('../models');
 const { getCurrentDate } = require('../utils/helpers');
+const {
+    updateRoleSchema,
+    createRoleSchema,
+} = require('../validators/roleValidator');
 
 /*
     This is a sample controller, you can continue to build your own controller
@@ -23,6 +32,7 @@ const getAllRoles = async (req, res, next) => {
                     'createdAt',
                 ],
             ],
+            order: [['createdAt', 'DESC']],
         });
         okResponse(res, allRoles);
     } catch (err) {
@@ -102,9 +112,15 @@ const deleteRoles = async (req, res, next) => {
 };
 
 const createRoles = async (req, res, next) => {
-    try {
-        const { name } = req.body;
+    const { name } = req.body;
 
+    const validate = createRoleSchema.validate(req.body);
+
+    if (validate.error) {
+        return errorResponse(res, validate.error.message, 400);
+    }
+
+    try {
         if (!name) return badRequestResponse(res, 'Invalid request');
 
         const role = await Roles.create({
@@ -118,16 +134,23 @@ const createRoles = async (req, res, next) => {
 };
 
 const updateRoles = async (req, res, next) => {
-    try {
-        const roleId = req.params.id;
-        const { name } = req.body;
+    const roleId = req.params.id;
+    const { name, status } = req.body;
 
+    const validate = updateRoleSchema.validate(req.body);
+
+    if (validate.error) {
+        return errorResponse(res, validate.error.message, 400);
+    }
+
+    try {
         const role = await Roles.findByPk(roleId);
 
         if (!role) return notFoundResponse(res, 'Role not found');
 
         await role.update({
             name,
+            status,
             updatedAt: getCurrentDate(),
         });
 
