@@ -7,6 +7,8 @@ const appRouter = require('./routers');
 const TIMEZONE = require('./entities/timezoneEntities');
 const { errorHandler } = require('./middlewares/handlerMiddleware');
 const moment = require('moment');
+const multer = require('multer');
+const path = require('path');
 dotenv.config();
 
 const app = express();
@@ -15,6 +17,7 @@ moment.tz.setDefault(TIMEZONE.JAKARTA);
 app.use(morgan('dev'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use('/storages', express.static(path.join(__dirname, 'storages')));
 app.use(cors());
 
 app.use('/', appRouter());

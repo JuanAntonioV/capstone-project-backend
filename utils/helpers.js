@@ -67,10 +67,16 @@ const getCurrentDate = (format, add, addUnit) => {
     return moment().add(currAdd, currAddUnit).format(currFormat);
 };
 
+const getFileUrl = (req, filename) => {
+    const appUrl = req.protocol + '://' + req.get('host');
+    return `${appUrl}/${filename}`;
+};
+
 module.exports = {
     getAppUrl,
     generateSalesId,
     hashPassword,
     getCurrentDate,
     checkPassword,
+    getFileUrl,
 };

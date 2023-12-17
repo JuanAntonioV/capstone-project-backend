@@ -4,36 +4,42 @@ const { errorResponse } = require('../utils/response');
 const { errorMessage } = require('../utils/response');
 
 const { Product } = require('../models');
-const { getCurrentDate } = require('../utils/helpers');
+const { getCurrentDate, getFileUrl } = require('../utils/helpers');
+const {
+    createProductSchema,
+    updateProductSchema,
+} = require('../validators/productValidator.');
+const _ = require('lodash');
+const fs = require('fs');
+const path = require('path');
+const { deleteFile } = require('../utils/uploads');
+
 const productController = {};
 /*
     This is a sample controller, you can continue to build your own controller
     by following the sample below.
 */
 
-productController.index = async (req, res) => {
-    okResponse(res, {
-        message: 'Hello World',
-    });
-};
-
 productController.create = async (req, res, next) => {
     const { name, price } = req.body;
 
-    if (!name || typeof name !== 'string') {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    } else if (name.trim() === '') {
-        return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
-    }
+    const validate = createProductSchema.validate(req.body);
 
-    if (!price || typeof price !== 'number' || price <= 0) {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
+    if (validate.error) {
+        return errorResponse(res, validate.error.message, 400);
     }
 
     try {
+        if (!req.file) {
+            return errorResponse(res, 'Gambar tidak boleh kosong', 400);
+        }
+
+        const filePath = req.file.path;
+
         const newProduct = await Product.create({
             name,
             price,
+            image: filePath,
         });
 
         okResponse(res, newProduct);
@@ -46,6 +52,12 @@ productController.getAll = async (req, res, next) => {
     try {
         const activeProduct = await Product.findAll({
             order: [['createdAt', 'DESC']],
+        });
+
+        activeProduct.forEach((product) => {
+            if (product.image) {
+                product.image = getFileUrl(req, product.image);
+            }
         });
 
         okResponse(res, activeProduct);
@@ -63,6 +75,10 @@ productController.getById = async (req, res, next) => {
             return;
         }
 
+        if (product.image) {
+            product.image = getFileUrl(req, product.image);
+        }
+
         okResponse(res, product);
     } catch (error) {
         next(error);
@@ -71,16 +87,12 @@ productController.getById = async (req, res, next) => {
 
 productController.update = async (req, res, next) => {
     const productId = req.params.id;
-    const { name, price, status } = req.body;
+    const { name, price, status, image } = req.body;
 
-    if (!name || typeof name !== 'string') {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
-    } else if (name.trim() === '') {
-        return errorResponse(res, errorMessage.ERROR_INPUT_VALIDATION);
-    }
+    const validate = updateProductSchema.validate(req.body);
 
-    if (!price || typeof price !== 'number' || price <= 0) {
-        return errorResponse(res, errorMessage.ERROR_PARAMS_VALIDATION);
+    if (validate.error) {
+        return errorResponse(res, validate.error.message, 400);
     }
 
     try {
@@ -90,10 +102,33 @@ productController.update = async (req, res, next) => {
             notFoundResponse(res, errorMessage.ERROR_NOT_FOUND);
             return;
         }
+
+        let imagePath = null;
+
+        if (!_.isEmpty(req.file)) {
+            const filePath = req.file.path;
+            // delete old file
+            if (product.image) {
+                deleteFile(product.image);
+            }
+            imagePath = filePath;
+        } else {
+            if (!_.isEmpty(image)) {
+                imagePath = product.image;
+            }
+        }
+
+        if (!imagePath) {
+            if (product.image) {
+                deleteFile(product.image);
+            }
+        }
+
         product = await product.update({
             name,
             price,
             status,
+            image: imagePath,
             updatedAt: getCurrentDate(),
         });
 
