@@ -1,6 +1,5 @@
 const {
     getTransactionDetail,
-    getUserTransaction,
     createTransaction,
     getAllTransaction,
 } = require('../controllers/transactionController');

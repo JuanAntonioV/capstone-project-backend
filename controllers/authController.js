@@ -1,10 +1,6 @@
 const { User, sequelize, AccessToken } = require('../models');
 const { checkPassword } = require('../utils/helpers');
-const {
-    okResponse,
-    errorResponse,
-    errorMessage,
-} = require('../utils/response');
+const { okResponse, errorResponse } = require('../utils/response');
 const jwt = require('jsonwebtoken');
 const { loginSchema } = require('../validators/authValidator');
 

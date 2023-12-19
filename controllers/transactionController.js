@@ -25,13 +25,14 @@ const getAllTransaction = async (req, res, next) => {
     try {
         const fromDate = req.query.from;
         const toDate = req.query.to;
-        // const page = req.query.page;
-        // const limit = parseInt(req.query.limit) || 10;
-        // const offset = (page - 1) * limit;
+        const page = req.query.page || 1;
+        const limit = Number(req.query.limit) || 10;
+        const offset = (page - 1) * limit;
+        const search = req.query.search || null;
 
         const where = {};
 
-        if (_.isEmpty(fromDate) && _.isEmpty(toDate)) {
+        if (!_.isEmpty(fromDate) && !_.isEmpty(toDate)) {
             where.createdAt = {
                 [Op.between]: [
                     moment(fromDate).endOf('day'),
@@ -40,8 +41,30 @@ const getAllTransaction = async (req, res, next) => {
             };
         }
 
+        // if search exist will search by id or user name
+        if (search) {
+            where[Op.or] = [
+                {
+                    id: {
+                        [Op.like]: `%${search}%`,
+                    },
+                },
+                {
+                    '$user.name$': {
+                        [Op.like]: `%${search}%`,
+                    },
+                },
+                {
+                    createdAt: {
+                        [Op.like]: `%${search}%`,
+                    },
+                },
+            ];
+        }
+
         const sales = await Sales.findAll({
-            where: !_.isEmpty(where) ? null : where,
+            where,
+            offset,
             attributes: {
                 exclude: ['createdAt', 'updatedAt'],
             },
@@ -61,7 +84,17 @@ const getAllTransaction = async (req, res, next) => {
             ],
         });
 
-        okResponse(res, sales);
+        const lastPage = Math.ceil(sales.length / limit);
+
+        const response = {
+            page: parseInt(page),
+            limit,
+            totalRows: sales.length,
+            lastPage,
+            data: sales,
+        };
+
+        okResponse(res, response);
     } catch (err) {
         next(err);
     }
