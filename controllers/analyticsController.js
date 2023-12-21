@@ -11,8 +11,8 @@ const moment = require('moment-timezone');
 
 const getDashboardStats = async (req, res, next) => {
     try {
-        const startPeriod = moment().startOf('week').toDate();
-        const endPeriod = moment().endOf('week').toDate();
+        const startPeriod = moment().startOf('month').toDate();
+        const endPeriod = moment().endOf('month').toDate();
 
         const totalRevenue = await Sales.findOne({
             where: {
@@ -43,13 +43,13 @@ const getDashboardStats = async (req, res, next) => {
                 label: 'Total Pemasukan',
                 value: totalRevenue.get('total_revenue') || '0',
                 type: 'money',
-                description: 'Periode Minggu Ini',
+                description: 'Periode Bulan Ini',
             },
             {
                 label: 'Total Pemesanan',
                 value: totalSales,
                 type: 'number',
-                description: 'Periode Minggu Ini',
+                description: 'Periode Bulan Ini',
             },
             {
                 label: 'Total Produk',

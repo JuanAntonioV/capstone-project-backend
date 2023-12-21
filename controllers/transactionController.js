@@ -152,7 +152,21 @@ const getTransactionDetail = async (req, res, next) => {
 
         const sales = await Sales.findOne({
             attributes: {
-                exclude: ['createdAt', 'updatedAt'],
+                exclude: ['updatedAt'],
+                include: [
+                    [
+                        sequelize.literal(
+                            'DATE_FORMAT(Sales.createdAt, "%Y-%m-%d")'
+                        ),
+                        'transaction_date',
+                    ],
+                    [
+                        sequelize.literal(
+                            '(SELECT COUNT(*) FROM sales_details WHERE sales_details.sales_id = Sales.id)'
+                        ),
+                        'total_item',
+                    ],
+                ],
             },
             where: {
                 id: salesId,
@@ -288,7 +302,102 @@ const createTransaction = async (req, res, next) => {
             sales_id: salesId,
         });
     } catch (err) {
-        console.log('error', err);
+        next(err);
+    }
+};
+
+const confirmTransaction = async (req, res, next) => {
+    try {
+        const salesId = req.params.id;
+
+        const sales = await Sales.findOne({
+            where: {
+                id: salesId,
+                status: salesStatus.MENUNGGU_PEMBAYARAN,
+            },
+        });
+
+        if (!sales) {
+            return errorResponse(res, 'Transaksi tidak ditemukan', 404);
+        }
+
+        await Sales.update(
+            {
+                status: salesStatus.PROSES,
+            },
+            {
+                where: {
+                    id: salesId,
+                },
+            }
+        );
+
+        okResponse(res, null, 'Transaksi berhasil dikonfirmasi');
+    } catch (err) {
+        next(err);
+    }
+};
+
+const cancelTransaction = async (req, res, next) => {
+    try {
+        const salesId = req.params.id;
+
+        const sales = await Sales.findOne({
+            where: {
+                id: salesId,
+                status: salesStatus.MENUNGGU_PEMBAYARAN,
+            },
+        });
+
+        if (!sales) {
+            return errorResponse(res, 'Transaksi tidak ditemukan', 404);
+        }
+
+        await Sales.update(
+            {
+                status: salesStatus.DIBATALKAN,
+            },
+            {
+                where: {
+                    id: salesId,
+                },
+            }
+        );
+
+        okResponse(res, null, 'Transaksi berhasil dibatalkan');
+    } catch (err) {
+        next(err);
+    }
+};
+
+const finishTransaction = async (req, res, next) => {
+    try {
+        const salesId = req.params.id;
+
+        const sales = await Sales.findOne({
+            where: {
+                id: salesId,
+                status: salesStatus.PROSES,
+            },
+        });
+
+        if (!sales) {
+            return errorResponse(res, 'Transaksi tidak ditemukan', 404);
+        }
+
+        await Sales.update(
+            {
+                status: salesStatus.BERHASIL,
+            },
+            {
+                where: {
+                    id: salesId,
+                },
+            }
+        );
+
+        okResponse(res, null, 'Transaksi berhasil diselesaikan');
+    } catch (err) {
         next(err);
     }
 };
@@ -298,4 +407,7 @@ module.exports = {
     getTransactionDetail,
     getAllTransaction,
     createTransaction,
+    confirmTransaction,
+    cancelTransaction,
+    finishTransaction,
 };
