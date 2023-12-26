@@ -75,6 +75,11 @@ const getAllTransaction = async (req, res, next) => {
                         [Op.like]: `%${search}%`,
                     },
                 },
+                {
+                    '$user.name$': {
+                        [Op.like]: `%${search}%`,
+                    },
+                },
             ];
         }
 
@@ -104,6 +109,14 @@ const getAllTransaction = async (req, res, next) => {
         // get total rows
         const totalRows = await Sales.count({
             where,
+            include: [
+                {
+                    association: 'user',
+                    attributes: {
+                        exclude: ['createdAt', 'updatedAt', 'password'],
+                    },
+                },
+            ],
         });
 
         // get total pages
