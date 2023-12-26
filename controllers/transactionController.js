@@ -32,11 +32,32 @@ const getAllTransaction = async (req, res, next) => {
 
         const where = {};
 
-        if (!_.isEmpty(fromDate) && !_.isEmpty(toDate)) {
+        if (_.isEmpty(fromDate) && _.isEmpty(toDate)) {
             where.createdAt = {
                 [Op.between]: [
-                    moment(fromDate).startOf('day'),
-                    moment(toDate).endOf('day'),
+                    moment().startOf('month').format('YYYY-MM-DD'),
+                    moment().endOf('month').format('YYYY-MM-DD'),
+                ],
+            };
+        } else if (_.isEmpty(fromDate)) {
+            where.createdAt = {
+                [Op.between]: [
+                    moment().startOf('month').format('YYYY-MM-DD'),
+                    moment(toDate).endOf('month').format('YYYY-MM-DD'),
+                ],
+            };
+        } else if (_.isEmpty(toDate)) {
+            where.createdAt = {
+                [Op.between]: [
+                    moment(fromDate).startOf('month').format('YYYY-MM-DD'),
+                    moment().endOf('month').format('YYYY-MM-DD'),
+                ],
+            };
+        } else {
+            where.createdAt = {
+                [Op.between]: [
+                    moment(fromDate).format('YYYY-MM-DD'),
+                    moment(toDate).format('YYYY-MM-DD'),
                 ],
             };
         }
@@ -46,11 +67,6 @@ const getAllTransaction = async (req, res, next) => {
             where[Op.or] = [
                 {
                     id: {
-                        [Op.like]: `%${search}%`,
-                    },
-                },
-                {
-                    '$user.name$': {
                         [Op.like]: `%${search}%`,
                     },
                 },
@@ -65,6 +81,7 @@ const getAllTransaction = async (req, res, next) => {
         const sales = await Sales.findAll({
             where,
             offset,
+            limit,
             attributes: {
                 exclude: ['createdAt', 'updatedAt'],
             },
@@ -84,7 +101,13 @@ const getAllTransaction = async (req, res, next) => {
             ],
         });
 
-        const lastPage = Math.ceil(sales.length / limit);
+        // get total rows
+        const totalRows = await Sales.count({
+            where,
+        });
+
+        // get total pages
+        const lastPage = Math.ceil(totalRows / limit);
 
         const response = {
             page: parseInt(page),

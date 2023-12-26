@@ -80,14 +80,37 @@ const getExportSales = async (req, res, next) => {
 
         const where = {};
 
-        if (!_.isEmpty(fromDate) && !_.isEmpty(toDate)) {
+        if (_.isEmpty(fromDate) && _.isEmpty(toDate)) {
             where.createdAt = {
                 [Op.between]: [
-                    moment(fromDate).startOf('month'),
-                    moment(toDate).endOf('month'),
+                    moment().startOf('month').format('YYYY-MM-DD'),
+                    moment().endOf('month').format('YYYY-MM-DD'),
+                ],
+            };
+        } else if (_.isEmpty(fromDate)) {
+            where.createdAt = {
+                [Op.between]: [
+                    moment().startOf('month').format('YYYY-MM-DD'),
+                    moment(toDate).endOf('month').format('YYYY-MM-DD'),
+                ],
+            };
+        } else if (_.isEmpty(toDate)) {
+            where.createdAt = {
+                [Op.between]: [
+                    moment(fromDate).startOf('month').format('YYYY-MM-DD'),
+                    moment().endOf('month').format('YYYY-MM-DD'),
+                ],
+            };
+        } else {
+            where.createdAt = {
+                [Op.between]: [
+                    moment(fromDate).format('YYYY-MM-DD'),
+                    moment(toDate).format('YYYY-MM-DD'),
                 ],
             };
         }
+
+        console.log('where', where);
 
         const sales = await Sales.findAll({
             where,
