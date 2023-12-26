@@ -1,15 +1,17 @@
 const { Category, sequelize } = require('../models');
-const { getCurrentDate } = require('../utils/helpers');
+const { getCurrentDate, getFileUrl } = require('../utils/helpers');
 const {
     okResponse,
     errorResponse,
     notFoundResponse,
     errorMessage,
 } = require('../utils/response');
+const { deleteFile } = require('../utils/uploads');
 const {
     createCategorySchema,
     updateCategorySchema,
 } = require('../validators/categoryValidator');
+const _ = require('lodash');
 
 // Create a new Category
 const createCategory = async (req, res, next) => {
@@ -22,7 +24,13 @@ const createCategory = async (req, res, next) => {
     }
 
     try {
-        const newCategory = await Category.create({ name });
+        if (!req.file) {
+            return errorResponse(res, 'Gambar tidak boleh kosong', 400);
+        }
+
+        const filePath = req.file.path;
+
+        const newCategory = await Category.create({ name, image: filePath });
         okResponse(res, newCategory);
     } catch (err) {
         next(err);
@@ -32,10 +40,19 @@ const createCategory = async (req, res, next) => {
 // Read all Categories
 const getAllCategories = async (req, res, next) => {
     try {
+        const status = req.query.status;
+
+        const where = {};
+
+        if (status) {
+            where.status = status;
+        }
+
         const allCategories = await Category.findAll({
             attributes: [
                 'id',
                 'name',
+                'image',
                 'status',
                 [
                     sequelize.fn(
@@ -46,6 +63,13 @@ const getAllCategories = async (req, res, next) => {
                     'createdAt',
                 ],
             ],
+            where,
+        });
+
+        allCategories.forEach((category) => {
+            if (category.image) {
+                category.image = getFileUrl(req, category.image);
+            }
         });
 
         okResponse(res, allCategories);
@@ -62,6 +86,7 @@ const getCategoryById = async (req, res, next) => {
             attributes: [
                 'id',
                 'name',
+                'image',
                 'status',
                 [
                     sequelize.fn(
@@ -78,6 +103,10 @@ const getCategoryById = async (req, res, next) => {
             return notFoundResponse(res, errorMessage.ERROR_NOT_FOUND);
         }
 
+        if (category.image) {
+            category.image = getFileUrl(req, category.image);
+        }
+
         okResponse(res, category);
     } catch (err) {
         next(err);
@@ -87,7 +116,7 @@ const getCategoryById = async (req, res, next) => {
 // Update a Category by ID
 const updateCategoryById = async (req, res, next) => {
     const categoryId = req.params.id;
-    const { name, status } = req.body;
+    const { name, status, image } = req.body;
 
     const validate = updateCategorySchema.validate({ name, status });
 
@@ -98,12 +127,35 @@ const updateCategoryById = async (req, res, next) => {
     try {
         let category = await Category.findByPk(categoryId);
         if (!category) {
-            notFoundResponse(res, errorMessage.ERROR_NOT_FOUND);
+            errorResponse(res, errorMessage.ERROR_NOT_FOUND, 404);
             return;
         }
+
+        let imagePath = null;
+
+        if (!_.isEmpty(req.file)) {
+            const filePath = req.file.path;
+            // delete old file
+            if (category.image) {
+                deleteFile(category.image);
+            }
+            imagePath = filePath;
+        } else {
+            if (!_.isEmpty(image)) {
+                imagePath = category.image;
+            }
+        }
+
+        if (!imagePath) {
+            if (category.image) {
+                deleteFile(category.image);
+            }
+        }
+
         category = await category.update({
             name,
             status,
+            image: imagePath,
             updatedAt: getCurrentDate(),
         });
 
@@ -121,6 +173,10 @@ const deleteCategoryById = async (req, res, next) => {
 
         if (!category) {
             return errorResponse(res, 'Category not found', 404);
+        }
+
+        if (category.image) {
+            deleteFile(category.image);
         }
 
         await category.destroy();

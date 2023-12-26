@@ -13,6 +13,7 @@ const _ = require('lodash');
 const fs = require('fs');
 const path = require('path');
 const { deleteFile } = require('../utils/uploads');
+const { Op } = require('sequelize');
 
 const productController = {};
 /*
@@ -50,8 +51,21 @@ productController.create = async (req, res, next) => {
 
 productController.getAll = async (req, res, next) => {
     try {
+        const status = req.query.status;
+        const search = req.query.search;
+        const where = {};
+
+        if (status) {
+            where.status = status;
+        }
+
+        if (search) {
+            where.name = { [Op.like]: `%${search}%` };
+        }
+
         const activeProduct = await Product.findAll({
             order: [['createdAt', 'DESC']],
+            where,
         });
 
         activeProduct.forEach((product) => {
@@ -146,6 +160,11 @@ productController.delete = async (req, res, next) => {
             errorResponse(res, errorMessage.ERROR_NOT_FOUND);
             return;
         }
+
+        if (product.image) {
+            deleteFile(product.image);
+        }
+
         await product.destroy();
         okResponse(res, product);
     } catch (error) {

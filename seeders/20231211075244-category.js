@@ -15,9 +15,11 @@ module.exports = {
         const categories = [
             {
                 name: 'Satuan',
+                image: null,
             },
             {
                 name: 'Kiloan',
+                image: null,
             },
         ];
 

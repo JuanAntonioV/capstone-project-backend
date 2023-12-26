@@ -35,7 +35,7 @@ const getAllTransaction = async (req, res, next) => {
         if (!_.isEmpty(fromDate) && !_.isEmpty(toDate)) {
             where.createdAt = {
                 [Op.between]: [
-                    moment(fromDate).endOf('day'),
+                    moment(fromDate).startOf('day'),
                     moment(toDate).endOf('day'),
                 ],
             };
@@ -277,12 +277,20 @@ const createTransaction = async (req, res, next) => {
             0
         );
 
+        if (!pickup_date) {
+            pickup_date = null;
+        }
+
+        if (!delivery_date) {
+            delivery_date = null;
+        }
+
         // create transaction
         await Sales.create({
             id: salesId,
             user_id: userId,
             category_id,
-            status: salesStatus.MENUNGGU_PEMBAYARAN,
+            status: salesStatus.PROSES,
             total_payment: totalAmount,
             pickup_date,
             delivery_date,
