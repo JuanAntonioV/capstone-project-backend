@@ -5,7 +5,6 @@ const categoryRoute = require('./categoryRoute');
 const transactionRoute = require('./transactionRoute');
 const productRoute = require('./productRoute');
 const rolesRoute = require('./rolesRoute');
-const passwordRoute = require('./passwordRoute');
 const authRoute = require('./authRoute');
 const analiticsRoute = require('./analyticsRoute');
 
@@ -19,7 +18,6 @@ module.exports = () => {
     transactionRoute(router);
     productRoute(router);
     rolesRoute(router);
-    passwordRoute(router);
     analiticsRoute(router);
     return router;
 };

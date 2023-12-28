@@ -7,12 +7,13 @@ const {
     deleteUserById,
     activedUser,
 } = require('../controllers/userController');
+const { checkUserToken } = require('../middlewares/authMiddleware');
 
 module.exports = (router) => {
-    router.post('/users', createUser);
-    router.get('/users', getAllUsers);
-    router.get('/users/:id', getUserById);
-    router.put('/users/:id', updateUserById);
-    router.post('/users/active', activedUser);
-    router.delete('/users/:id', deleteUserById);
+    router.post('/users', checkUserToken, createUser);
+    router.get('/users', checkUserToken, getAllUsers);
+    router.get('/users/:id', checkUserToken, getUserById);
+    router.put('/users/:id', checkUserToken, updateUserById);
+    router.post('/users/active', checkUserToken, activedUser);
+    router.delete('/users/:id', checkUserToken, deleteUserById);
 };

@@ -6,12 +6,23 @@ const {
     updateCategoryById,
     deleteCategoryById,
 } = require('../controllers/categoryController');
+const { checkUserToken } = require('../middlewares/authMiddleware');
 const { uploads } = require('../utils/uploads');
 
 module.exports = (router) => {
-    router.post('/categories', uploads.single('image'), createCategory);
-    router.get('/categories', getAllCategories);
-    router.get('/categories/:id', getCategoryById);
-    router.put('/categories/:id', uploads.single('image'), updateCategoryById);
-    router.delete('/categories/:id', deleteCategoryById);
+    router.post(
+        '/categories',
+        checkUserToken,
+        uploads.single('image'),
+        createCategory
+    );
+    router.get('/categories', checkUserToken, getAllCategories);
+    router.get('/categories/:id', checkUserToken, getCategoryById);
+    router.put(
+        '/categories/:id',
+        checkUserToken,
+        uploads.single('image'),
+        updateCategoryById
+    );
+    router.delete('/categories/:id', checkUserToken, deleteCategoryById);
 };
