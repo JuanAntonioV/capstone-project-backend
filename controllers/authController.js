@@ -51,6 +51,10 @@ const login = async (req, res, next) => {
             return errorResponse(res, 'Email atau password salah', 401);
         }
 
+        if (!user.status) {
+            return errorResponse(res, 'Akun anda telah dinonaktifkan', 401);
+        }
+
         const isPasswordValid = await checkPassword(password, user.password);
 
         if (!isPasswordValid) {
